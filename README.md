@@ -1,2 +1,0 @@
-# UnityCG-SRP
-SRPのサンプル
