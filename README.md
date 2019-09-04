@@ -1,2 +1,2 @@
-# UnityCG-SRP
-SRPのサンプル
+# UnityCG-SRP-DEV
+SRPのサンプル開発用リポジトリ

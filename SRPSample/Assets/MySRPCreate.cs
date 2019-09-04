@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
 
+#if UNITY_EDITOR
+
 // エディタ拡張
 public class MySRPCreate
 {
@@ -15,3 +17,5 @@ public class MySRPCreate
 //        GraphicsSettings.renderPipelineAsset = instance;
     }
 }
+
+#endif

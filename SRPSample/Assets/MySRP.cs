@@ -18,17 +18,43 @@ public class MySRPAsset : RenderPipelineAsset
 public class MySRPInstance : RenderPipeline
 {
     static readonly ShaderTagId BasePassName = new ShaderTagId("BasicPass");
+
     static readonly List<ShaderTagId> k_ShaderTags = new List<ShaderTagId>() { BasePassName, };
 
     // 描画コマンドバッファ
     private CommandBuffer commandBuffer;
-
+    private CommandBuffer postCommandBuffer;
+    private Material mat;
+    int temp = Shader.PropertyToID("_Temp");
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
         if(commandBuffer == null)
         {
             commandBuffer = new CommandBuffer();
+            postCommandBuffer = new CommandBuffer();
+
+            Shader sh = Shader.Find("Hidden/postEffectShader");
+            if(sh == null)
+            {
+                UnityEngine.Debug.unityLogger.Log("not sh");
+            }
+            Material mat = new Material(sh);
+            
+
+            
+
+            postCommandBuffer.GetTemporaryRT(temp, Camera.main.pixelWidth, Camera.main.pixelHeight, 0, FilterMode.Bilinear);
+            postCommandBuffer.Blit(BuiltinRenderTextureType.CurrentActive, temp);
+            postCommandBuffer.Blit(temp, BuiltinRenderTextureType.CurrentActive, mat);
+
+            // TemporaryRTを解放
+            postCommandBuffer.ReleaseTemporaryRT(temp);
+            // カメラへCommandBufferを追加
+
+
+            Camera.main.AddCommandBuffer(CameraEvent.AfterEverything, postCommandBuffer);
+
         }
 
         foreach(var camera in cameras)
@@ -53,8 +79,8 @@ public class MySRPInstance : RenderPipeline
             commandBuffer.ClearRenderTarget(true, true, Color.black,1.0f);
             // 描画コマンドを実行します
             context.ExecuteCommandBuffer(commandBuffer);
-
            
+
 
             // 描画処理の記載
             SortingSettings sortSettings = new SortingSettings(camera);
@@ -70,17 +96,33 @@ public class MySRPInstance : RenderPipeline
             // 描画設定
             DrawingSettings drawSettings = new DrawingSettings(BasePassName, sortSettings);
 
+            ShadowDrawingSettings shadowSttings = new ShadowDrawingSettings(cullResults, 0);
+
+
+
             // 描画
-            context.DrawRenderers(cullResults , ref drawSettings, ref filterSettings);
+            context.DrawRenderers(cullResults, ref drawSettings, ref filterSettings);
+
+            context.DrawSkybox(camera);
+
+            context.DrawShadows(ref shadowSttings);
 
         }
 
 
+        // ImageEffectの記載
+
+            context.ExecuteCommandBuffer(postCommandBuffer);
+
+
+
+
+
+
+ 
         // コマンドのサブミット
         context.Submit();
 
-
-        // ImageEffectの記載
     }
 
     // Directional Lightの内容をShaderに反映させます
