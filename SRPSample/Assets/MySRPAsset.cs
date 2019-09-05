@@ -105,7 +105,8 @@ public class MySRPInstance : RenderPipeline
 
             context.DrawSkybox(camera);
 
-            context.DrawShadows(ref shadowSttings);
+//            context.DrawShadows(ref shadowSttings);
+            // コマンドのサブミット
 
         }
 
@@ -115,13 +116,12 @@ public class MySRPInstance : RenderPipeline
             context.ExecuteCommandBuffer(postCommandBuffer);
 
 
+            context.Submit();
 
 
 
 
  
-        // コマンドのサブミット
-        context.Submit();
 
     }
 
